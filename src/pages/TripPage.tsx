@@ -1,3 +1,4 @@
+import { TripShare } from "@/components/TripShare"
 import { useMemo, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
@@ -305,6 +306,7 @@ export function TripPage() {
         </ul>
       ) : null}
 
+      {cloud && <TripShare key={trip.id} tripId={trip.id} />}
       <Tabs defaultValue="plan" className="mt-6">
         <TabsList className="h-auto flex-wrap bg-white/70">
           <TabsTrigger value="plan">Plan</TabsTrigger>
