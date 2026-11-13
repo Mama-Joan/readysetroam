@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
+import { TripTodos } from "@/components/TripTodos"
 import { TripMap, type MapPoint } from "@/components/TripMap"
 import {
   blankBudget,
@@ -312,6 +313,7 @@ export function TripPage() {
           <TabsTrigger value="flights">Flights</TabsTrigger>
           <TabsTrigger value="money">Money</TabsTrigger>
           <TabsTrigger value="people">People</TabsTrigger>
+          <TabsTrigger value="todos">To-dos ({(trip.todos ?? []).filter(t => !t.done).length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="plan" className="mt-4">
@@ -674,6 +676,10 @@ export function TripPage() {
               })}
             </ul>
           )}
+        </TabsContent>
+
+        <TabsContent value="todos" className="mt-4">
+          <TripTodos key={trip.id} todos={trip.todos ?? []} onChange={todos => commit({...trip, todos})} />
         </TabsContent>
 
         <TabsContent value="people" className="mt-4">
