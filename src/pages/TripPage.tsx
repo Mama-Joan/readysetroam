@@ -102,7 +102,7 @@ function flightNeedsDetail(flight: Flight) {
 export function TripPage() {
   const { tripId } = useParams()
   const navigate = useNavigate()
-  const { trips, updateTrip, resetTrip, removeTrip } = useTrips()
+  const { trips, updateTrip, resetTrip, removeTrip, cloud, busy } = useTrips()
   const trip = trips.find((item) => item.id === tripId)
   const [trackedId, setTrackedId] = useState(tripId)
   const [dayId, setDayId] = useState(trip?.days[0]?.id ?? "")
@@ -180,8 +180,7 @@ export function TripPage() {
   }
 
   const commit = (next: Trip, message = "Saved on this device") => {
-    updateTrip(next)
-    toast.success(message)
+    void updateTrip(next).then(() => toast.success(cloud ? "Saved to cloud" : message)).catch(e => toast.error(String(e.message ?? e)))
   }
 
   const saveStop = (stop: Stop, place?: Place) => {
@@ -268,8 +267,8 @@ export function TripPage() {
               type="button"
               variant="outline"
               onClick={() => {
-                resetTrip(trip.id)
-                toast.success("Restored the published copy")
+                if (!window.confirm("Restore the published copy? This replaces current trip details.")) return
+                void resetTrip(trip.id).then(() => toast.success("Restored the published copy")).catch(e => toast.error(String(e.message ?? e)))
               }}
             >
               Restore published copy
@@ -279,8 +278,8 @@ export function TripPage() {
               type="button"
               variant="outline"
               onClick={() => {
-                removeTrip(trip.id)
-                navigate("/")
+                if (!window.confirm("Delete this trip?")) return
+                void removeTrip(trip.id).then(() => navigate("/")).catch(e => toast.error(String(e.message ?? e)))
               }}
             >
               Delete this trip
@@ -289,7 +288,7 @@ export function TripPage() {
         </div>
       </div>
       <p className="mt-4 text-sm text-muted-foreground">
-        What you add, including who owes you, is saved in this browser. Friends see the published plan, which updates when a new version of the site is published.
+        {cloud ? (busy ? "Cloud operation in progress…" : "Private cloud trip. Sharing is not enabled yet.") : "Changes are saved in this browser."}
       </p>
       {trip.links.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-2">
