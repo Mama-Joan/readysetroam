@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import { seedTripById, seedTrips } from "@/data/seed"
 import type { Trip } from "@/lib/types"
 
-const STORAGE_KEY = "passage.trips.v1"
+const STORAGE_KEY = "readysetroam.trips.v2"
 
 function clone<T>(value: T): T {
   return structuredClone(value)

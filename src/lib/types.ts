@@ -72,6 +72,11 @@ export type Person = {
   note?: string
 }
 
+export type BudgetShare = {
+  name: string
+  amount: number
+}
+
 export type BudgetLine = {
   id: string
   category: string
@@ -82,6 +87,8 @@ export type BudgetLine = {
   paidBy?: string
   /** Groups sharing the cost in equal parts, including the payer when they share it. */
   splitGroups?: string[]
+  /** Exact amount each person owes for this line. Used instead of an even split. */
+  shares?: BudgetShare[]
 }
 
 export type Flight = {
@@ -95,6 +102,19 @@ export type Flight = {
   arriveTime: string
   number?: string
   notes?: string
+}
+
+export type Rental = {
+  id: string
+  company: string
+  vehicle: string
+  pickup: string
+  dropoff: string
+  pickupDate: string
+  dropoffDate: string
+  who?: string
+  notes?: string
+  confirmation: string
 }
 
 export type TripLink = {
@@ -118,6 +138,7 @@ export type Trip = {
   stays: Stay[]
   budget: BudgetLine[]
   flights?: Flight[]
+  rentals?: Rental[]
 }
 
 export const budgetCategories = [

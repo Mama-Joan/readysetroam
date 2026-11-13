@@ -25,6 +25,7 @@ const timingLabel = {
 
 export function HomePage() {
   const { trips, addTrip } = useTrips()
+  const ordered = [...trips].sort((left, right) => right.start.localeCompare(left.start))
   const [creating, setCreating] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
 
@@ -33,7 +34,7 @@ export function HomePage() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = "passage-trips.json"
+    link.download = "readysetroam-trips.json"
     link.click()
     URL.revokeObjectURL(url)
     setExportOpen(false)
@@ -43,15 +44,15 @@ export function HomePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
       <div className="max-w-2xl">
-        <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">The shared desk</p>
-        <h1 className="mt-2 text-4xl text-balance sm:text-5xl">Every trip, with the people who are actually going.</h1>
+        <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">Trips Home</p>
+        <h1 className="mt-2 text-4xl text-balance sm:text-5xl">Making memories, one trip at a time.</h1>
         <p className="mt-4 max-w-xl text-base text-muted-foreground">
           Hokkaido, South Island, and Ipoh already live here. Open one for the days, the coloured route, the hotels, the flights, and who owes what.
         </p>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {trips.map((trip, index) => (
+        {ordered.map((trip, index) => (
           <TripCard key={trip.id} trip={trip} wash={cardWash(index)} />
         ))}
         <button
