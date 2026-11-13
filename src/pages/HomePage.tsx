@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
+import { CloudTripsPanel } from "@/components/CloudTripsPanel"
 import { TripDialog } from "@/components/editors"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -24,7 +25,7 @@ const timingLabel = {
 } as const
 
 export function HomePage() {
-  const { trips, addTrip } = useTrips()
+  const { trips, addTrip, cloud, busy } = useTrips()
   const ordered = [...trips].sort((left, right) => right.start.localeCompare(left.start))
   const [creating, setCreating] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
@@ -57,11 +58,11 @@ export function HomePage() {
         ))}
         <button
           type="button"
-          onClick={() => setCreating(true)}
+          disabled={busy} onClick={() => setCreating(true)}
           className="flex min-h-52 flex-col items-start justify-between rounded-3xl border border-dashed bg-white/70 p-5 text-left hover:bg-card"
         >
           <span className="font-display text-2xl">New trip</span>
-          <span className="text-sm text-muted-foreground">A blank set of days for the next group. Saved on this device.</span>
+          <span className="text-sm text-muted-foreground">A blank set of days for the next group. {cloud ? "Saved to cloud." : "Saved on this device."}</span>
         </button>
       </div>
 
@@ -69,16 +70,17 @@ export function HomePage() {
         <Button type="button" variant="outline" onClick={() => setExportOpen(true)}>
           Download trip file
         </Button>
-        <p>Changes stay in this browser until that file is published with the site.</p>
+        <p>{cloud ? "Private cloud trips. Download for backup only." : "Changes stay in this browser."}</p>
       </div>
+
+      <CloudTripsPanel />
 
       {creating ? (
         <TripDialog
           open
           onOpenChange={setCreating}
           onCreate={(trip) => {
-            addTrip(trip)
-            toast.success("Trip created on this device")
+            void addTrip(trip).then(() => toast.success(cloud ? "Trip created in cloud" : "Trip created on this device")).catch(e => toast.error(String(e.message ?? e)))
           }}
         />
       ) : null}

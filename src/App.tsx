@@ -3,9 +3,13 @@ import { HomePage } from "@/pages/HomePage"
 import { PeoplePage } from "@/pages/PeoplePage"
 import { TripPage } from "@/pages/TripPage"
 import { TripImport } from "@/components/TripImport"
+import { SharedTripPage } from "@/pages/SharedTripPage"
+import { CloudAuth } from "@/components/CloudAuth"
 import { Button } from "@/components/ui/button"
 
 export default function App() {
+  const token = new URLSearchParams(window.location.search).get("share")
+  if (token) return <SharedTripPage token={token} />
   return (
     <div className="min-h-svh">
       <header className="sticky top-0 z-20 border-b border-white/60 bg-white/70 backdrop-blur">
@@ -13,6 +17,7 @@ export default function App() {
           <Link to="/" className="font-display text-2xl tracking-tight">
             readysetroam
           </Link>
+          <CloudAuth />
           <Link to="/people" className="text-sm text-muted-foreground hover:text-foreground">
             People
           </Link>
