@@ -2,6 +2,7 @@ import { Link, Route, Routes } from "react-router-dom"
 import { HomePage } from "@/pages/HomePage"
 import { PeoplePage } from "@/pages/PeoplePage"
 import { TripPage } from "@/pages/TripPage"
+import { TripImport } from "@/components/TripImport"
 import { Button } from "@/components/ui/button"
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
           </Link>
         </div>
       </header>
+      <TripImport />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/people" element={<PeoplePage />} />
