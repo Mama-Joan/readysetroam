@@ -44,8 +44,8 @@ export function TripsProvider({ children }: { children: ReactNode }) {
 
   const store = useMemo<TripStore>(() => {
     const persist = (next: Trip[]) => {
-      setTrips(next)
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ trips: next }))
+      setTrips(next)
     }
     return {
       trips,
