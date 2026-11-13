@@ -122,7 +122,18 @@ export type TripLink = {
   href: string
 }
 
+export type Todo = {
+  id: string
+  title: string
+  done: boolean
+  category?: string
+  due?: string
+  who?: string
+  notes?: string
+}
+
 export type Trip = {
+  todos?: Todo[]
   id: string
   title: string
   destination: string
