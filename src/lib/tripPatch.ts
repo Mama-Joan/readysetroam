@@ -24,7 +24,7 @@ export function parsePatch(raw: string): TripPatch {
   for (const c of p.changes) {
     if (!c || typeof c.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(c.date)) throw new Error("Invalid update date")
     if (c.action === "addStop") {
-      if (!c.stop || typeof c.stop.id !== "string" || c.stop.status === "booked") throw new Error("Invalid new stop")
+      if (!c.stop || typeof c.stop.id !== "string" || (c.stop.status === "booked" || c.stop.kind === "flight" || c.stop.kind === "stay")) throw new Error("Invalid new stop")
     } else if (c.action === "updateStop" || c.action === "removeStop") {
       if (typeof c.stopId !== "string" || !c.before || c.before.id !== c.stopId ||
           (c.action === "updateStop" && (!c.stop || c.stop.id !== c.stopId))) throw new Error("Invalid stop update")
