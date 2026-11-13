@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
+import { CloudTripsPanel } from "@/components/CloudTripsPanel"
 import { TripDialog } from "@/components/editors"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -71,6 +72,8 @@ export function HomePage() {
         </Button>
         <p>Changes stay in this browser until that file is published with the site.</p>
       </div>
+
+      <CloudTripsPanel />
 
       {creating ? (
         <TripDialog
