@@ -1,7 +1,10 @@
-import type { Trip, Stop } from "./types"
+import type { Trip, Stop, Todo } from "./types"
 import { validateTrip } from "./tripImport"
 
 type Change =
+  | { action: "addTodo"; todo: Todo }
+  | { action: "updateTodo"; todoId: string; before: Todo; todo: Todo }
+  | { action: "removeTodo"; todoId: string; before: Todo }
   | { action: "addStop"; date: string; stop: Stop }
   | { action: "updateStop"; date: string; stopId: string; before: Stop; stop: Stop }
   | { action: "removeStop"; date: string; stopId: string; before: Stop }
@@ -22,7 +25,17 @@ export function parsePatch(raw: string): TripPatch {
       !/^[a-zA-Z0-9_-]{1,100}$/.test(p.tripId) || !Array.isArray(p.changes) ||
       !p.changes.length || p.changes.length > 200) throw new Error("Invalid update")
   for (const c of p.changes) {
-    if (!c || typeof c.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(c.date)) throw new Error("Invalid update date")
+    if (!c) throw new Error("Invalid change")
+    if (c.action === "addTodo") {
+      if (!c.todo || typeof c.todo.id !== "string") throw new Error("Invalid to-do")
+      continue
+    }
+    if (c.action === "updateTodo" || c.action === "removeTodo") {
+      if (typeof c.todoId !== "string" || !c.before || c.before.id !== c.todoId ||
+          (c.action === "updateTodo" && (!c.todo || c.todo.id !== c.todoId))) throw new Error("Invalid to-do update")
+      continue
+    }
+    if (typeof c.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(c.date)) throw new Error("Invalid update date")
     if (c.action === "addStop") {
       if (!c.stop || typeof c.stop.id !== "string" || (c.stop.status === "booked" || c.stop.kind === "flight" || c.stop.kind === "stay")) throw new Error("Invalid new stop")
     } else if (c.action === "updateStop" || c.action === "removeStop") {
@@ -38,6 +51,30 @@ export function previewPatch(original: Trip, patch: TripPatch) {
   const messages: string[] = []
   let changed = false
   for (const c of patch.changes) {
+    if (c.action === "addTodo" || c.action === "updateTodo" || c.action === "removeTodo") {
+      const todos = trip.todos ?? []
+      const key = c.action === "addTodo" ? c.todo.id : c.todoId
+      const existing = todos.find(t => t.id === key)
+      if (c.action === "addTodo") {
+        if (existing && !equal(existing,c.todo)) throw new Error("To-do ID conflict: " + key)
+        if (existing) { messages.push("Already added: " + existing.title); continue }
+        trip.todos = [...todos, structuredClone(c.todo)]
+        messages.push("Add to-do: " + JSON.stringify(c.todo))
+      } else {
+        if (c.action === "removeTodo" && !existing) { messages.push("Already absent: " + key); continue }
+        if (c.action === "updateTodo" && equal(existing,c.todo)) { messages.push("Already updated: " + key); continue }
+        if (!existing || !equal(existing,c.before)) throw new Error("Local to-do edit conflict: " + key)
+        if (c.action === "removeTodo") {
+          trip.todos = todos.filter(t => t.id !== key)
+          messages.push("Remove to-do: " + existing.title)
+        } else {
+          trip.todos = todos.map(t => t.id === key ? structuredClone(c.todo) : t)
+          messages.push("Update to-do: " + JSON.stringify(existing) + " → " + JSON.stringify(c.todo))
+        }
+      }
+      changed = true
+      continue
+    }
     const days = trip.days.filter(d => d.date === c.date)
     if (days.length !== 1) throw new Error("Missing or ambiguous day: " + c.date)
     const day = days[0]
