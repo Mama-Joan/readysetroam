@@ -3,6 +3,7 @@ import { HomePage } from "@/pages/HomePage"
 import { PeoplePage } from "@/pages/PeoplePage"
 import { TripPage } from "@/pages/TripPage"
 import { TripImport } from "@/components/TripImport"
+import { CloudAuth } from "@/components/CloudAuth"
 import { Button } from "@/components/ui/button"
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
           <Link to="/" className="font-display text-2xl tracking-tight">
             readysetroam
           </Link>
+          <CloudAuth />
           <Link to="/people" className="text-sm text-muted-foreground hover:text-foreground">
             People
           </Link>
