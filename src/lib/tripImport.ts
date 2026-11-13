@@ -75,6 +75,11 @@ export function validateTrip(value: unknown): Trip {
     fields(r, ["company","vehicle","pickup","dropoff","pickupDate","dropoffDate","confirmation"], ["who","notes"])
     check(date(r.pickupDate) && date(r.dropoffDate) && (r.pickupDate as string) <= (r.dropoffDate as string), "Invalid rental dates")
   })
+  if (t.todos !== undefined) rows(t.todos, todo => {
+    fields(todo, ["title"], ["category","due","who","notes"])
+    check((todo.title as string).trim() && typeof todo.done === "boolean", "Invalid to-do")
+    check(todo.due === undefined || todo.due === "" || date(todo.due), "Invalid to-do due date")
+  })
   return t as unknown as Trip
 }
 export function parseTripImport(raw: string): Trip {
