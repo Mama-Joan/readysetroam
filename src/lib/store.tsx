@@ -15,9 +15,9 @@ export function loadTrips(): Trip[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return clone(seedTrips)
-    const parsed = JSON.parse(raw) as { trips?: Trip[] }
+    const parsed = JSON.parse(raw) as { trips?: Trip[]; deletedSeedIds?: unknown }
     if (!Array.isArray(parsed.trips)) return clone(seedTrips)
-    const deletedIds = new Set(Array.isArray(parsed.deletedSeedIds) ? parsed.deletedSeedIds.filter((id): id is string => typeof id === "string") : [])
+    const deletedIds = new Set(Array.isArray(parsed.deletedSeedIds) ? parsed.deletedSeedIds.filter((id: unknown): id is string => typeof id === "string") : [])
     const saved = new Map(parsed.trips.map((trip) => [trip.id, trip]))
     const merged = seedTrips.filter(seed => !deletedIds.has(seed.id)).map((seed) => saved.get(seed.id) ?? clone(seed))
     for (const trip of parsed.trips) {
