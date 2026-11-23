@@ -17,8 +17,9 @@ export function loadTrips(): Trip[] {
     if (!raw) return clone(seedTrips)
     const parsed = JSON.parse(raw) as { trips?: Trip[] }
     if (!Array.isArray(parsed.trips)) return clone(seedTrips)
+    const deletedIds = new Set(Array.isArray(parsed.deletedSeedIds) ? parsed.deletedSeedIds.filter((id): id is string => typeof id === "string") : [])
     const saved = new Map(parsed.trips.map((trip) => [trip.id, trip]))
-    const merged = seedTrips.map((seed) => saved.get(seed.id) ?? clone(seed))
+    const merged = seedTrips.filter(seed => !deletedIds.has(seed.id)).map((seed) => saved.get(seed.id) ?? clone(seed))
     for (const trip of parsed.trips) {
       if (!seedTrips.some((seed) => seed.id === trip.id)) merged.push(trip)
     }
@@ -49,6 +50,9 @@ const TripContext = createContext<TripStore | null>(null)
 
 export function TripsProvider({ children }: { children: ReactNode }) {
   const [localTrips, setLocal] = useState(loadTrips)
+  const [deletedSeedIds, setDeletedSeedIds] = useState<string[]>(() => {
+    try { const raw = localStorage.getItem(STORAGE_KEY); const ids = raw ? JSON.parse(raw).deletedSeedIds : []; return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [] } catch { return [] }
+  })
   const [rows, setRows] = useState<CloudTrip[]>([])
   const [user, setUser] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
@@ -100,8 +104,9 @@ export function TripsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user && !busy && !loaded && status === "Loading cloud trips…") void refresh()
   }, [user, busy, loaded, status])
-  function persist(next: Trip[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ trips: next }))
+  function persist(next: Trip[], deleted = deletedSeedIds) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ trips: next, deletedSeedIds: deleted }))
+    setDeletedSeedIds(deleted)
     latestLocal.current = next
     setLocal(next)
   }
@@ -112,7 +117,8 @@ export function TripsProvider({ children }: { children: ReactNode }) {
     if (!owner) {
       const current = latestLocal.current
       if (kind === "add" && current.some(t => t.id === id)) throw new Error("Trip already exists")
-      persist(kind === "delete" ? current.filter(t => t.id !== id) : kind === "add" ? [...current, trip as Trip] : current.map(t => t.id === id ? trip as Trip : t))
+      const deleted = kind === "delete" && isPublishedTrip(id) ? [...new Set([...deletedSeedIds, id])] : kind === "add" ? deletedSeedIds.filter(x => x !== id) : deletedSeedIds
+      persist(kind === "delete" ? current.filter(t => t.id !== id) : kind === "add" ? [...current, trip as Trip] : current.map(t => t.id === id ? trip as Trip : t), deleted)
       return
     }
     if (!loaded) throw new Error("Load cloud trips before editing")

@@ -274,10 +274,10 @@ export function TripPage() {
             >
               Restore published copy
             </Button>
-          ) : (
-            <Button
+          ) : null}
+          <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={() => {
                 if (!window.confirm("Delete this trip?")) return
                 void removeTrip(trip.id).then(() => navigate("/")).catch(e => toast.error(String(e.message ?? e)))
@@ -285,7 +285,6 @@ export function TripPage() {
             >
               Delete this trip
             </Button>
-          )}
         </div>
       </div>
       <p className="mt-4 text-sm text-muted-foreground">
